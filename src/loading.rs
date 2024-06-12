@@ -19,6 +19,13 @@ impl Plugin for LoadingPlugin {
     }
 }
 
+pub fn load_scene(mut commands: Commands, asset_server: AssetServer) {
+    commands.spawn(DynamicSceneBundle {
+        scene: asset_server.load("scenes/test-scene.ron"),
+        ..default()
+    });
+}
+
 // the following asset collections will be loaded during the State `GameState::Loading`
 // when done loading, they will be inserted as resources (see <https://github.com/NiklasEi/bevy_asset_loader>)
 
