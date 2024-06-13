@@ -1,12 +1,14 @@
 use crate::actions::Actions;
-use crate::loading::TextureAssets;
+use crate::loading::{PlayerAssets, TextureAssets};
 use crate::GameState;
 use bevy::prelude::*;
-use crate::player::input::{Action, player_input_bundle, PlayerInput, PlayerInputSet};
+use leafwing_input_manager::prelude::ActionState;
+use serde::{Deserialize, Serialize};
+use crate::player::input::{PlayerAction, player_input_bundle};
 
 pub struct PlayerPlugin;
 
-#[derive(Component)]
+#[derive(Component, Copy, Clone, Eq, PartialEq, Hash, Debug, Default, Reflect)]
 pub struct Player;
 
 #[derive(SystemSet, Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
@@ -24,30 +26,61 @@ impl Plugin for PlayerPlugin {
             .configure_sets(
                 Update,
                 (
-                    PlayerSystemSet.after(PlayerInputSet),
                     PlayerSystemSet.run_if(in_state(GameState::Playing)),
                 ),
-            );
+            ).register_type::<PlayerStats>()
+            .register_type::<Player>();
     }
 }
 
-fn spawn_player(mut commands: Commands, textures: Res<TextureAssets>) {
+#[derive(Component, Debug, Clone, Serialize, Deserialize, Default, Reflect)]
+pub struct PlayerStats {
+    movement_speed: f32,
+    jump_strength: f32,
+}
+
+
+fn spawn_player(
+    mut commands: Commands,
+    textures: Res<TextureAssets>,
+    player_assets: Res<PlayerAssets>
+) {
+    let model = commands.spawn(SceneBundle {
+        scene: player_assets.player.clone_weak(),
+        ..default()
+    }).id();
+    
     commands
         .spawn(SpriteBundle {
             texture: textures.bevy.clone(),
             transform: Transform::from_translation(Vec3::new(0., 0., 1.)),
             ..Default::default()
         })
-        .insert(Player)
-        .insert(player_input_bundle());
+        .insert((
+            Player,
+            PlayerStats {
+                movement_speed: 250.0,
+                jump_strength: 7.0,
+            }
+        ))
+        .insert(player_input_bundle())
+        .insert_children(0, &[model]);
 }
 
 fn move_player(
     time: Res<Time>,
-    actions: Res<Actions>,
-    mut player_query: Query<(&mut Transform, &PlayerInput), With<Player>>,
+    camera: Query<&GlobalTransform, With<Camera>>,
+    mut player_query: Query<(&mut Transform, &ActionState<PlayerAction>), With<Player>>,
 ) {
-    for (mut player_transform, input) in &mut player_query {
+    // let camera = camera.single();
+
+    for (mut player_transform, input) in player_query.iter_mut() {
+        if let Some(mut move_delta) = input.pressed(&PlayerAction::Move)
+            .then(|| input.clamped_axis_pair(&PlayerAction::Move).unwrap().xy()) {
+            move_delta *= time.delta_seconds();
+        }
+
+
         // player_transform.translation += movement;
     }
 }

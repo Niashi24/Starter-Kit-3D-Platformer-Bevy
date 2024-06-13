@@ -5,6 +5,7 @@ mod audio;
 mod loading;
 mod menu;
 mod player;
+mod environment;
 
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
@@ -16,6 +17,9 @@ use bevy::app::App;
 #[cfg(debug_assertions)]
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
+use bevy_rapier3d::prelude::*;
+use bevy_editor_pls::EditorPlugin;
+use crate::environment::environment::EnvironmentPlugin;
 
 // This example game uses States to separate logic
 // See https://bevy-cheatbook.github.io/programming/states.html
@@ -40,12 +44,18 @@ impl Plugin for GamePlugin {
             MenuPlugin,
             ActionsPlugin,
             InternalAudioPlugin,
+            EnvironmentPlugin,
             PlayerPlugin,
+            RapierPhysicsPlugin::<NoUserData>::default(),
         ));
 
         #[cfg(debug_assertions)]
         {
-            app.add_plugins((FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin::default()));
+            app.add_plugins((
+                FrameTimeDiagnosticsPlugin,
+                LogDiagnosticsPlugin::default(),
+                EditorPlugin::default(),
+            ));
         }
     }
 }
