@@ -10,6 +10,7 @@ pub enum PlayerAction {
     Move,
     Look,
     Jump,
+    Zoom,
 }
 
 impl PlayerAction {
@@ -19,11 +20,19 @@ impl PlayerAction {
         input_map.insert(PlayerAction::Move, DualAxis::left_stick());
         input_map.insert(PlayerAction::Look, DualAxis::right_stick());
         input_map.insert(PlayerAction::Jump, GamepadButtonType::South);
+        input_map.insert(PlayerAction::Zoom, VirtualAxis {
+            positive: GamepadButtonType::RightTrigger.into(),
+            negative: GamepadButtonType::LeftTrigger.into(),
+        });
 
         // kbm
         input_map.insert(PlayerAction::Move, VirtualDPad::wasd());
         input_map.insert(PlayerAction::Look, VirtualDPad::arrow_keys());
         input_map.insert(PlayerAction::Jump, KeyCode::Space);
+        input_map.insert(PlayerAction::Zoom, VirtualAxis::from_keys(
+            KeyCode::NumpadAdd,
+            KeyCode::NumpadSubtract,
+        ));
 
         input_map
     }
@@ -31,7 +40,7 @@ impl PlayerAction {
 
 pub fn player_input_bundle() -> impl Bundle {
     (
-        PlayerAction::default_input_map(),
+        InputManagerBundle::with_map(PlayerAction::default_input_map()),
     )
 }
 

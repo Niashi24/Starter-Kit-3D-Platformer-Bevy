@@ -16,7 +16,8 @@ impl Plugin for LoadingPlugin {
                 .continue_to_state(GameState::Menu)
                 .load_collection::<AudioAssets>()
                 .load_collection::<TextureAssets>()
-                .load_collection::<PlayerAssets>(),
+                .load_collection::<PlayerAssets>()
+                .load_collection::<ModelAssets>(),
         );
     }
 }
@@ -57,4 +58,30 @@ pub struct PlayerAssets {
     pub walk: Handle<AnimationClip>,
     #[asset(path = "models/character.glb#Animation0")]
     pub jump: Handle<AnimationClip>,
+}
+
+#[derive(AssetCollection, Resource)]
+pub struct ModelAssets {
+    #[asset(path = "models/cloud.glb#Scene0")]
+    pub cloud: Handle<Scene>,
+    #[asset(path = "models/coin.glb#Scene0")]
+    pub coin: Handle<Scene>,
+    #[asset(path = "models/dust.glb#Scene0")]
+    pub dust: Handle<Scene>,
+    #[asset(path = "models/flag.glb#Scene0")]
+    pub flag: Handle<Scene>,
+    #[asset(path = "models/grass.glb#Scene0")]
+    pub grass: Handle<Scene>,
+    #[asset(path = "models/grass-small.glb#Scene0")]
+    pub grass_small: Handle<Scene>,
+    #[asset(path = "models/platform.glb#Scene0")]
+    pub platform: Handle<Scene>,
+    #[asset(path = "models/platform-falling.glb#Scene0")]
+    pub platform_falling: Handle<Scene>,
+    #[asset(path = "models/platform-grass-large-round.glb#Scene0")]
+    pub platform_grass_large_round: Handle<Scene>,
+    #[asset(path = "models/platform-large.glb#Scene0")]
+    pub platform_large: Handle<Scene>,
+    #[asset(path = "models/platform-medium.glb#Scene0")]
+    pub platform_medium: Handle<Scene>,
 }

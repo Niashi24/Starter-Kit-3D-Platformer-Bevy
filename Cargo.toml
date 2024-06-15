@@ -76,6 +76,7 @@ leafwing-input-manager = "0.13.3"
 serde = { version = "1.0.197", features = ["derive"] }
 bevy_editor_pls = "0.8.1"
 bevy_rapier3d = { version = "0.26.0", features = ["debug-render"] }
+bevy-inspector-egui = "0.24.0"
 
 [build-dependencies]
 embed-resource = "1"

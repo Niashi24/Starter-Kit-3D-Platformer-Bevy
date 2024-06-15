@@ -19,7 +19,9 @@ use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use bevy_editor_pls::EditorPlugin;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use crate::environment::environment::EnvironmentPlugin;
+use crate::player::camera::CameraPlugin;
 
 // This example game uses States to separate logic
 // See https://bevy-cheatbook.github.io/programming/states.html
@@ -46,6 +48,8 @@ impl Plugin for GamePlugin {
             InternalAudioPlugin,
             EnvironmentPlugin,
             PlayerPlugin,
+            CameraPlugin,
+            
             RapierPhysicsPlugin::<NoUserData>::default(),
         ));
 
@@ -53,8 +57,9 @@ impl Plugin for GamePlugin {
         {
             app.add_plugins((
                 FrameTimeDiagnosticsPlugin,
-                LogDiagnosticsPlugin::default(),
-                EditorPlugin::default(),
+                WorldInspectorPlugin::default(),
+                // LogDiagnosticsPlugin::default(),
+                // EditorPlugin::default(),
             ));
         }
     }
