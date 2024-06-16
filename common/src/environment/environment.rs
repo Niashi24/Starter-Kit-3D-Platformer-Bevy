@@ -36,7 +36,7 @@ fn spawn_environment(
             blue: 197.0 / 255.0,
             alpha: 1.0,
         },
-        brightness: 1.15,
+        brightness: 10000.0,
     });
     
     commands.insert_resource(ClearColor(Color::Rgba {
