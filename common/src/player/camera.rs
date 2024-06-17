@@ -1,19 +1,19 @@
-﻿use std::ops::{Range, RangeInclusive};
+﻿use std::ops::{RangeInclusive};
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::ActionState;
 use serde::{Deserialize, Serialize};
 use crate::GameState;
+use crate::math::smooth_damp;
 use crate::player::input::PlayerAction;
-use crate::player::player::{Player, PlayerSystemSet};
+use crate::player::player::{PlayerSystemSet};
 
 pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Playing), spawn_camera)
+        app
             .add_systems(Update, (
                 track_player.after(PlayerSystemSet),
-                gizmos_point,
                 (rotate_camera, turn_towards_target).chain(),
                 (zoom_camera, zoom_towards_target).chain(),
             ).run_if(in_state(GameState::Playing)))
@@ -31,7 +31,10 @@ impl Plugin for CameraPlugin {
 
 
 #[derive(Component, Clone, Reflect, Serialize, Deserialize, Debug)]
-pub struct ViewFollowTarget(Entity);
+pub struct ViewFollowTarget {
+    pub target: Entity,
+    pub velocity: Vec3,
+}
 
 #[derive(Component, Clone, Reflect, Serialize, Deserialize, Debug)]
 pub struct ViewZoomStats {
@@ -49,10 +52,10 @@ impl Default for ViewZoomStats {
 }
 
 #[derive(Component, Clone, Reflect, Serialize, Deserialize, Debug)]
-struct TargetZoom(f32);
+pub struct TargetZoom(pub f32);
 
 #[derive(Component, Clone, Reflect, Serialize, Deserialize, Debug)]
-struct ViewCamera(Entity);
+pub struct ViewCamera(pub Entity);
 
 #[derive(Component, Clone, Reflect, Serialize, Deserialize, Debug)]
 pub struct ViewRotateStats {
@@ -70,8 +73,7 @@ impl Default for ViewRotateStats {
 }
 
 #[derive(Component, Clone, Reflect, Serialize, Deserialize, Debug, Default)]
-struct TargetRotation(Quat);
-
+pub struct TargetRotation(pub Quat);
 
 impl Default for TargetZoom {
     fn default() -> Self {
@@ -79,34 +81,28 @@ impl Default for TargetZoom {
     }
 }
 
-fn spawn_camera(mut commands: Commands) {
-    let camera = commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 0.0, 10.0),
-        ..default()
-    }).id();
-    
-    let pivot = commands.spawn(SpatialBundle {
-        transform: Transform::from_translation(Vec3::new(0.0, 0.0, 1.0)),
-        ..default()
-    })
-        .insert((
-            ViewRotateStats::default(),
-            TargetRotation::default(),
-            ViewZoomStats::default(),
-            TargetZoom::default(),
-            ViewCamera(camera),
-        ))
-        .add_child(camera);
-}
-
-fn track_player() {}
-
-fn gizmos_point(
-    mut gizmos: Gizmos,
-    query: Query<&GlobalTransform, With<TargetRotation>>,
+fn track_player(
+    mut view: Query<(&mut Transform, &mut ViewFollowTarget)>,
+    target_pos: Query<&GlobalTransform>,
+    time: Res<Time>,
 ) {
-    for transform in &query {
-        gizmos.cuboid(*transform, Color::RED);
+    for (mut transform, mut target) in view.iter_mut() {
+        let target_pos = target_pos.get(target.target).unwrap().translation();
+        // transform.translation = lerp_time_vec3(
+        //     transform.translation,
+        //     target_pos,
+        //     16.0,
+        //     time.delta_seconds()
+        // );
+
+        (transform.translation, target.velocity) = smooth_damp(
+            transform.translation,
+            target_pos,
+            target.velocity,
+            time.delta_seconds(),
+            0.25,
+        );
+        
     }
 }
 

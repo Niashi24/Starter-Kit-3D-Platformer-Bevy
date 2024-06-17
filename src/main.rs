@@ -8,6 +8,7 @@ use bevy::winit::WinitWindows;
 use bevy::DefaultPlugins;
 use common::GamePlugin; // ToDo: Replace bevy_game with your new crate name.
 use std::io::Cursor;
+use scenes::ScenesPlugin;
 use winit::window::Icon;
 
 pub fn main() {
@@ -27,6 +28,7 @@ pub fn main() {
             ..default()
         }))
         .add_plugins(GamePlugin)
+        .add_plugins(ScenesPlugin)
         .add_systems(Startup, set_window_icon)
         .run();
 }
