@@ -1,4 +1,5 @@
 ﻿use bevy::prelude::*;
+use bevy::prelude::light_consts::lux;
 use bevy_rapier3d::prelude::Collider;
 use common::loading::{ModelAssets, PlayerAssets};
 use common::player::camera::{TargetRotation, TargetZoom, ViewCamera, ViewFollowTarget, ViewRotateStats, ViewZoomStats};
@@ -20,7 +21,7 @@ fn spawn_player(world: &mut World) -> Entity {
     let player_model = world.resource::<PlayerAssets>().player.clone_weak();
 
     world.spawn(SpatialBundle {
-        transform: Transform::from_translation(Vec3::new(0., 0., 1.)),
+        transform: Transform::from_translation(Vec3::new(0., 0.5, 1.)),
         ..default()
     })
         .insert((
@@ -50,10 +51,7 @@ fn spawn_camera_view(world: &mut World, player: Entity) -> Entity {
         ..default()
     })
         .insert((
-            ViewFollowTarget {
-                target: player,
-                velocity: Default::default(),
-            },
+            ViewFollowTarget(player),
             ViewRotateStats::default(),
             TargetRotation::default(),
             ViewZoomStats::default(),
@@ -74,9 +72,14 @@ fn spawn_environment(
         transform: Transform::from_rotation(Quat::from_euler(
             EulerRot::YXZ,
             (-50.0f32).to_radians(),
-            (115.0f32).to_radians(),
+            (-115.0f32).to_radians(),
             0.0
         )),
+        directional_light: DirectionalLight {
+            illuminance: lux::DIRECT_SUNLIGHT,
+            shadows_enabled: true,
+            ..default()
+        },
         ..default()
     });
 

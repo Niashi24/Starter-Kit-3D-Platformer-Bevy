@@ -3,7 +3,6 @@ use bevy::prelude::*;
 use leafwing_input_manager::prelude::ActionState;
 use serde::{Deserialize, Serialize};
 use crate::GameState;
-use crate::math::smooth_damp;
 use crate::player::input::PlayerAction;
 use crate::player::player::{PlayerSystemSet};
 
@@ -31,10 +30,7 @@ impl Plugin for CameraPlugin {
 
 
 #[derive(Component, Clone, Reflect, Serialize, Deserialize, Debug)]
-pub struct ViewFollowTarget {
-    pub target: Entity,
-    pub velocity: Vec3,
-}
+pub struct ViewFollowTarget(pub Entity);
 
 #[derive(Component, Clone, Reflect, Serialize, Deserialize, Debug)]
 pub struct ViewZoomStats {
@@ -82,25 +78,17 @@ impl Default for TargetZoom {
 }
 
 fn track_player(
-    mut view: Query<(&mut Transform, &mut ViewFollowTarget)>,
+    mut view: Query<(&mut Transform, &ViewFollowTarget)>,
     target_pos: Query<&GlobalTransform>,
     time: Res<Time>,
 ) {
-    for (mut transform, mut target) in view.iter_mut() {
-        let target_pos = target_pos.get(target.target).unwrap().translation();
-        // transform.translation = lerp_time_vec3(
-        //     transform.translation,
-        //     target_pos,
-        //     16.0,
-        //     time.delta_seconds()
-        // );
-
-        (transform.translation, target.velocity) = smooth_damp(
+    for (mut transform, target) in view.iter_mut() {
+        let target_pos = target_pos.get(target.0).unwrap().translation();
+        transform.translation = lerp_time_vec3(
             transform.translation,
             target_pos,
-            target.velocity,
-            time.delta_seconds(),
-            0.25,
+            4.14,
+            time.delta_seconds()
         );
         
     }
@@ -159,7 +147,8 @@ fn turn_towards_target(
         transform.rotation = slerp_time(
             transform.rotation,
             target_rotation,
-            16.0,  // decay constant, hope this is fine!!
+            // decay is calculated from original scale of 6 (see bottom)
+            6.322,  // decay constant, hope this is fine!!
             time.delta_seconds());
     }
 }
@@ -177,12 +166,19 @@ fn zoom_towards_target(
         transform.translation.z = lerp_time(
                 transform.translation.z,
                 zoom.0,
-                16.0,
+                // decay is calculated from original scale of 8 (see bottom)
+                8.586,
                 time.delta_seconds());
     }
 }
 
 // See https://youtu.be/LSNQuFEDOyQ for why we can't just do a regular lerp
+// In the original gdscript code, most lerps were done with
+// lerp(current, target, <scale> * delta(time))
+// we can calculate the decay from the scale using the formula
+// -ln(1 - scale * delta_time) / delta_time
+// assuming that delta_time is 1/60
+// Note that this is pretty close to f(x) = x for values close to zero
 fn lerp_time(a: f32, b: f32, decay: f32, delta: f32) -> f32 {
     a.lerp(b, 1.0 - (-decay * delta).exp())
 }
