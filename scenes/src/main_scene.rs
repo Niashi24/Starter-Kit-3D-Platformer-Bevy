@@ -4,8 +4,7 @@ use bevy_rapier3d::prelude::Collider;
 use common::loading::{ModelAssets, PlayerAssets};
 use common::player::camera::{TargetRotation, TargetZoom, ViewCamera, ViewFollowTarget, ViewRotateStats, ViewZoomStats};
 use common::player::input::player_input_bundle;
-use common::player::player::{Player, PlayerStats};
-
+use common::player::components::{Player, PlayerStats};
 
 pub fn spawn_main_scene(
     world: &mut World,

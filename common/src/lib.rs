@@ -1,17 +1,14 @@
 #![allow(clippy::type_complexity)]
 
-pub mod actions;
 pub mod audio;
 pub mod loading;
 pub mod menu;
 pub mod player;
 mod math;
 
-use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
-use player::player::PlayerPlugin;
 
 use bevy::app::App;
 #[cfg(debug_assertions)]
@@ -20,6 +17,7 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use crate::player::camera::CameraPlugin;
+use crate::player::PlayerPlugin;
 
 // This example game uses States to separate logic
 // See https://bevy-cheatbook.github.io/programming/states.html
@@ -42,7 +40,6 @@ impl Plugin for GamePlugin {
         app.init_state::<GameState>().add_plugins((
             LoadingPlugin,
             MenuPlugin,
-            ActionsPlugin,
             InternalAudioPlugin,
             PlayerPlugin,
             CameraPlugin,

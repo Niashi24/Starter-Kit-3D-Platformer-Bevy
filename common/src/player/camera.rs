@@ -4,7 +4,7 @@ use leafwing_input_manager::prelude::ActionState;
 use serde::{Deserialize, Serialize};
 use crate::GameState;
 use crate::player::input::PlayerAction;
-use crate::player::player::{PlayerSystemSet};
+use crate::player::PlayerSystemSet;
 
 pub struct CameraPlugin;
 
