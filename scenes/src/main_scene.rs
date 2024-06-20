@@ -1,11 +1,10 @@
-﻿use std::any::Any;
-use bevy::prelude::*;
+﻿use bevy::prelude::*;
 use bevy::prelude::light_consts::lux;
 use bevy_rapier3d::prelude::*;
 use common::loading::{ModelAssets, PlayerAssets};
 use common::player::camera::{TargetRotation, TargetZoom, ViewCamera, ViewFollowTarget, ViewRotateStats, ViewZoomStats};
 use common::player::input::player_input_bundle;
-use common::player::components::{Player, PlayerStats};
+use common::player::components::{Player, PlayerStats, Velocity};
 
 pub fn spawn_main_scene(
     world: &mut World,
@@ -33,7 +32,8 @@ fn spawn_player(world: &mut World) -> Entity {
                 ..default()
             },
             RigidBody::KinematicPositionBased,
-            Collider::capsule(Vec3::Y * 0.35, Vec3::Y * 0.75, 0.3)
+            Collider::capsule(Vec3::Y * 0.35, Vec3::Y * 0.75, 0.3),
+            Velocity(Vec3::ZERO),
         ))
         .insert(player_input_bundle())
         .with_children(|c| {

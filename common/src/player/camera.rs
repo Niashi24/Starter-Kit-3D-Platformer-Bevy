@@ -172,21 +172,29 @@ fn zoom_towards_target(
     }
 }
 
-// See https://youtu.be/LSNQuFEDOyQ for why we can't just do a regular lerp
-// In the original gdscript code, most lerps were done with
-// lerp(current, target, <scale> * delta(time))
-// we can calculate the decay from the scale using the formula
-// -ln(1 - scale * delta_time) / delta_time
-// assuming that delta_time is 1/60
-// Note that this is pretty close to f(x) = x for values close to zero
-fn lerp_time(a: f32, b: f32, decay: f32, delta: f32) -> f32 {
+/// A framerate independant lerp function.
+/// See https://youtu.be/LSNQuFEDOyQ for why we can't just do a regular lerp.
+///
+/// In the original gdscript code, Most lerps were done with
+/// `lerp(current, target, <scale> * dt))`
+/// we can calculate the decay from the scale using the formula
+/// `-ln(1 - scale * dt) / delta_time`
+/// assuming that delta_time is `1/60`
+/// Note that this is pretty close to `f(x) = x` for values close to zero
+pub fn lerp_time(a: f32, b: f32, decay: f32, delta: f32) -> f32 {
     a.lerp(b, 1.0 - (-decay * delta).exp())
 }
 
-fn lerp_time_vec3(a: Vec3, b: Vec3, decay: f32, delta: f32) -> Vec3 {
+pub fn lerp_time_vec3(a: Vec3, b: Vec3, decay: f32, delta: f32) -> Vec3 {
     a.lerp(b, 1.0 - (-decay * delta).exp())
 }
 
-fn slerp_time(a: Quat, b: Quat, decay: f32, delta: f32) -> Quat {
+pub fn slerp_time(a: Quat, b: Quat, decay: f32, delta: f32) -> Quat {
     a.slerp(b, 1.0 - (-decay * delta).exp())
+}
+
+pub fn nudge_velocity_acceleration(a: Vec3, b: Vec3, decay: f32, delta: f32) -> (Vec3, Vec3) {
+    let lerp = lerp_time_vec3(a, b, decay, delta);
+
+    (lerp, (b * (decay * delta + 1.0) - lerp) / decay)
 }

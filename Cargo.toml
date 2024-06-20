@@ -18,7 +18,7 @@ opt-level = 1
 # This is used by trunk as it doesn't support custom profiles: https://github.com/trunk-rs/trunk/issues/605
 # xbuild also uses this profile for building android AABs because I couldn't find a configuration for it
 [profile.release]
-opt-level = "s"
+opt-level = "z"
 lto = true
 codegen-units = 1
 strip = true
@@ -57,8 +57,7 @@ bevy = { version = "0.13", default-features = false, features = [
     "tonemapping_luts",
     "default_font",
     "webgl2",
-    "bevy_debug_stepping",
-    "dynamic_linking"
+    "bevy_debug_stepping"
 ] }
 bevy_reflect_derive = "0.13.2"
 bevy_reflect = "0.13.2"
@@ -74,9 +73,5 @@ leafwing-input-manager = "0.13.3"
 serde = { version = "1.0.197", features = ["derive"] }
 bevy_editor_pls = "0.8.1"
 bevy_rapier3d = { version = "0.26.0", features = ["debug-render"] }
-bevy-inspector-egui = "0.24.0"
+#bevy-inspector-egui = { version = "0.24.0"}
 num-traits = "0.2.19"
-
-[build-dependencies]
-embed-resource = "1"
-

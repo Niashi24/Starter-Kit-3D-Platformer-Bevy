@@ -15,7 +15,6 @@ use bevy::app::App;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use crate::player::camera::CameraPlugin;
 use crate::player::PlayerPlugin;
 
@@ -52,7 +51,6 @@ impl Plugin for GamePlugin {
         {
             app.add_plugins((
                 FrameTimeDiagnosticsPlugin,
-                WorldInspectorPlugin::default(),
                 // LogDiagnosticsPlugin::default(),
                 // EditorPlugin::default(),
             ));
