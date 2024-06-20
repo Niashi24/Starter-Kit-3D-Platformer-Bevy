@@ -1,4 +1,5 @@
-﻿use bevy::prelude::*;
+﻿use std::any::Any;
+use bevy::prelude::*;
 use bevy::prelude::light_consts::lux;
 use bevy_rapier3d::prelude::*;
 use common::loading::{ModelAssets, PlayerAssets};
@@ -19,17 +20,20 @@ pub fn spawn_main_scene(
 fn spawn_player(world: &mut World) -> Entity {
     let player_model = world.resource::<PlayerAssets>().player.clone_weak();
 
-    world.spawn(SpatialBundle {
-        transform: Transform::from_translation(Vec3::new(0., 0.5, 1.)),
-        ..default()
-    })
+    world.spawn(SpatialBundle::from_transform(
+        Transform::from_translation(Vec3::new(0., 0.5, 1.))))
         .insert((
             Name::new("Player"),
             Player,
             PlayerStats {
                 movement_speed: 4.0,
                 jump_strength: 7.0,
-            }
+            },
+            KinematicCharacterController {
+                ..default()
+            },
+            RigidBody::KinematicPositionBased,
+            Collider::capsule(Vec3::Y * 0.35, Vec3::Y * 0.75, 0.3)
         ))
         .insert(player_input_bundle())
         .with_children(|c| {
@@ -224,14 +228,14 @@ fn spawn_environment(
     spawn_flag(world);
 
     spawn_grass_platform(world);
-    
+
     let clouds: [Transform; 7] = [
         Transform::from_xyz(1.549, 1.107, -2.666),
         Transform {
             translation: Vec3::new(3.335, 1.371, -4.193),
             rotation: Quat::from_euler(
                 EulerRot::XYZ,
-                7.3f32.to_radians(), 17.7f32.to_radians(), 19.8f32.to_radians()
+                7.3f32.to_radians(), 17.7f32.to_radians(), 19.8f32.to_radians(),
             ),
             scale: Vec3::splat(1.403),
         },
@@ -239,7 +243,7 @@ fn spawn_environment(
             translation: Vec3::new(-10.575, 2.038, -7.937),
             rotation: Quat::from_euler(
                 EulerRot::XYZ,
-                15.7f32.to_radians(), 11.1f32.to_radians(), (-12.6f32).to_radians()
+                15.7f32.to_radians(), 11.1f32.to_radians(), (-12.6f32).to_radians(),
             ),
             scale: Vec3::splat(1.403),
         },
@@ -247,7 +251,7 @@ fn spawn_environment(
             translation: Vec3::new(-11.182, 2.038, 9.281),
             rotation: Quat::from_euler(
                 EulerRot::XYZ,
-                19f32.to_radians(), 45.2f32.to_radians(), (-44.5f32).to_radians()
+                19f32.to_radians(), 45.2f32.to_radians(), (-44.5f32).to_radians(),
             ),
             scale: Vec3::splat(1.403),
         },
@@ -255,7 +259,7 @@ fn spawn_environment(
             translation: Vec3::new(-10.916, 2.795, 11.515),
             rotation: Quat::from_euler(
                 EulerRot::XYZ,
-                19f32.to_radians(), 150.5f32.to_radians(), (-44.5f32).to_radians()
+                19f32.to_radians(), 150.5f32.to_radians(), (-44.5f32).to_radians(),
             ),
             scale: Vec3::splat(1.403),
         },
@@ -263,7 +267,7 @@ fn spawn_environment(
             translation: Vec3::new(-14.304, 2.038, -8.242),
             rotation: Quat::from_euler(
                 EulerRot::XYZ,
-                7.3f32.to_radians(), 39.8f32.to_radians(), 47.5f32.to_radians()
+                7.3f32.to_radians(), 39.8f32.to_radians(), 47.5f32.to_radians(),
             ),
             scale: Vec3::splat(2.699),
         },
@@ -271,12 +275,12 @@ fn spawn_environment(
             translation: Vec3::new(-15.866, 2.038, 7.837),
             rotation: Quat::from_euler(
                 EulerRot::XYZ,
-                7.3f32.to_radians(), 39.8f32.to_radians(), 47.5f32.to_radians()
+                7.3f32.to_radians(), 39.8f32.to_radians(), 47.5f32.to_radians(),
             ),
             scale: Vec3::splat(2.699),
         },
     ];
-    
+
     for cloud in clouds {
         spawn_cloud(world, cloud);
     }
@@ -295,9 +299,9 @@ fn spawn_platform(
         .with_children(|c| {
             c.spawn(SpatialBundle::from_transform(Transform::from_xyz(0.0, 0.25, 0.0)))
                 .insert(Collider::cuboid(
-                    2.0,
-                    0.5,
-                    2.0,
+                    1.0,
+                    0.25,
+                    1.0,
                 ));
         });
 }
@@ -315,9 +319,9 @@ fn spawn_medium_platform(
         .with_children(|c| {
             c.spawn(SpatialBundle::from_transform(Transform::from_xyz(0.0, 0.25, 0.0)))
                 .insert(Collider::cuboid(
-                    3.0,
-                    0.5,
-                    3.0,
+                    1.5,
+                    0.25,
+                    1.5,
                 ))
                 .insert(RigidBody::Fixed);
         });
@@ -337,9 +341,9 @@ fn spawn_falling_platform(
         .with_children(|c| {
             c.spawn(SpatialBundle::from_transform(Transform::from_xyz(0.0, 0.25, 0.0)))
                 .insert(Collider::cuboid(
-                    2.0,
-                    0.5,
-                    2.0,
+                    1.0,
+                    0.25,
+                    1.0,
                 ));
         });
 }
@@ -350,12 +354,12 @@ fn spawn_coin(
 ) {
     world.spawn(SceneBundle {
         scene: world.resource::<ModelAssets>().coin.clone(),
-        transform,
+        transform: transform.with_translation(transform.translation + Vec3::Y * 0.25),
         ..default()
     })
         .insert(Name::new("Coin"))
         .with_children(|c| {
-            c.spawn(SpatialBundle::from_transform(Transform::from_xyz(0.0, 0.5, 0.0)))
+            c.spawn(SpatialBundle::from_transform(Transform::from_xyz(0.0, 0.25, 0.0)))
                 .insert(Collider::ball(0.5f32))
                 .insert(Sensor);
         });

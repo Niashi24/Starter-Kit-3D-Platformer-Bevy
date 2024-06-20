@@ -45,6 +45,7 @@ impl Plugin for GamePlugin {
             CameraPlugin,
             
             RapierPhysicsPlugin::<NoUserData>::default(),
+            RapierDebugRenderPlugin::default(),
         ));
 
         #[cfg(debug_assertions)]
