@@ -4,7 +4,7 @@ use bevy_rapier3d::prelude::*;
 use common::loading::{ModelAssets, PlayerAssets};
 use common::player::camera::{TargetRotation, TargetZoom, ViewCamera, ViewFollowTarget, ViewRotateStats, ViewZoomStats};
 use common::player::input::player_input_bundle;
-use common::player::components::{Player, PlayerStats, Velocity};
+use common::player::components::{Gravity, Player, PlayerState, PlayerStats, Velocity};
 
 pub fn spawn_main_scene(
     world: &mut World,
@@ -28,12 +28,16 @@ fn spawn_player(world: &mut World) -> Entity {
                 movement_speed: 4.0,
                 jump_strength: 7.0,
             },
+            PlayerState::default(),
             KinematicCharacterController {
+                min_slope_slide_angle: 15f32.to_radians(),
+                max_slope_climb_angle: 45f32.to_radians(),
                 ..default()
             },
             RigidBody::KinematicPositionBased,
             Collider::capsule(Vec3::Y * 0.35, Vec3::Y * 0.75, 0.3),
             Velocity(Vec3::ZERO),
+            Gravity(9.81),
         ))
         .insert(player_input_bundle())
         .with_children(|c| {
@@ -393,7 +397,6 @@ fn spawn_flag(world: &mut World) {
 }
 
 fn spawn_grass_platform(world: &mut World) {
-    // TODO: add grass to platform
     let grass = world.resource::<ModelAssets>().grass.clone();
     let grass_small = world.resource::<ModelAssets>().grass_small.clone();
     world.spawn(SceneBundle {
@@ -404,8 +407,7 @@ fn spawn_grass_platform(world: &mut World) {
         .insert(Name::new("Grass Platform"))
         .with_children(|c| {
             c.spawn(SpatialBundle::from_transform(Transform::from_xyz(0.0, 0.25, 0.0)))
-                .insert(Collider::cylinder(0.25, 2.5))
-                .insert(Sensor);
+                .insert(Collider::cylinder(0.25, 2.5));
 
             c.spawn(SceneBundle {
                 scene: grass_small,

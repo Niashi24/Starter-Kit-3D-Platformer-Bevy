@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use leafwing_input_manager::prelude::ActionState;
 use serde::{Deserialize, Serialize};
 use crate::GameState;
+use crate::math::nudge;
 use crate::player::input::PlayerAction;
 use crate::player::PlayerSystemSet;
 
@@ -12,10 +13,12 @@ impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_systems(Update, (
-                track_player.after(PlayerSystemSet),
                 (rotate_camera, turn_towards_target).chain(),
                 (zoom_camera, zoom_towards_target).chain(),
             ).run_if(in_state(GameState::Playing)))
+            .add_systems(FixedUpdate, (
+                track_player.after(PlayerSystemSet),
+            ))
             
             .register_type::<ViewFollowTarget>()
             
@@ -84,13 +87,12 @@ fn track_player(
 ) {
     for (mut transform, target) in view.iter_mut() {
         let target_pos = target_pos.get(target.0).unwrap().translation();
-        transform.translation = lerp_time_vec3(
+        transform.translation = nudge(
             transform.translation,
             target_pos,
             4.14,
             time.delta_seconds()
         );
-        
     }
 }
 
@@ -163,7 +165,7 @@ fn zoom_towards_target(
             return;
         };
 
-        transform.translation.z = lerp_time(
+        transform.translation.z = nudge(
                 transform.translation.z,
                 zoom.0,
                 // decay is calculated from original scale of 8 (see bottom)
@@ -181,20 +183,12 @@ fn zoom_towards_target(
 /// `-ln(1 - scale * dt) / delta_time`
 /// assuming that delta_time is `1/60`
 /// Note that this is pretty close to `f(x) = x` for values close to zero
-pub fn lerp_time(a: f32, b: f32, decay: f32, delta: f32) -> f32 {
-    a.lerp(b, 1.0 - (-decay * delta).exp())
-}
-
-pub fn lerp_time_vec3(a: Vec3, b: Vec3, decay: f32, delta: f32) -> Vec3 {
-    a.lerp(b, 1.0 - (-decay * delta).exp())
-}
-
 pub fn slerp_time(a: Quat, b: Quat, decay: f32, delta: f32) -> Quat {
     a.slerp(b, 1.0 - (-decay * delta).exp())
 }
 
 pub fn nudge_velocity_acceleration(a: Vec3, b: Vec3, decay: f32, delta: f32) -> (Vec3, Vec3) {
-    let lerp = lerp_time_vec3(a, b, decay, delta);
+    let lerp = nudge(a, b, decay, delta);
 
     (lerp, (b * (decay * delta + 1.0) - lerp) / decay)
 }
