@@ -19,11 +19,27 @@ pub fn reset_player(
     }
 }
 
+pub fn check_grounded(
+    physics: Res<RapierContext>,
+    mut player: Query<(&mut KinematicCharacterControllerOutput, &KinematicCharacterController, &GlobalTransform, Entity)>,
+) {
+    for (mut output, controller, transform, entity) in player.iter_mut() {
+        let ray_origin = transform.translation();
+        let ray_dir = -controller.up;
+        let max_toi = 0.05;
+        let solid = true;
+        let filter = QueryFilter::default().exclude_collider(entity);
+
+        output.grounded = physics.cast_ray(ray_origin, ray_dir, max_toi, solid, filter).is_some();
+    }
+}
+
 pub fn update_applied_velocity(
     mut player_query: Query<(&mut Velocity, &KinematicCharacterControllerOutput)>,
     time: Res<Time>,
 ) {
     for (mut vel, output) in player_query.iter_mut() {
+        info!("{:?}", output);
         let dS = output.effective_translation - output.desired_translation;
         vel.0 += dS / time.delta_seconds();
     }
@@ -78,7 +94,7 @@ pub fn apply_player_air_gravity(
         }
         
         let d_v = -character.up * gravity.0 * time.delta_seconds();
-        // let d_x = d_v / 2.0 * time.delta_seconds();
+        let d_x = d_v / 2.0 * time.delta_seconds();
         
         // *character.translation.get_or_insert(Vec3::ZERO) += d_x;
         velocity.0 += d_v;

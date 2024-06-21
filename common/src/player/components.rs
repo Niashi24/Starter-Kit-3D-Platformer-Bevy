@@ -43,7 +43,8 @@ impl PlayerState {
     pub fn jump(&mut self) {
         match self {
             PlayerState::Grounded => *self = PlayerState::Airborne { jumps: 1 },
-            PlayerState::Airborne { jumps } => { *jumps = jumps.saturating_sub(1) }
+            PlayerState::Airborne { jumps: 0 } => {}
+            PlayerState::Airborne { jumps } => { *jumps -= 1; }
         }
     }
 }

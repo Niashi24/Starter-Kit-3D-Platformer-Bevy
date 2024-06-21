@@ -25,6 +25,7 @@ impl Plugin for PlayerPlugin {
             .add_systems(FixedUpdate, (
                 (
                     update_applied_velocity,
+                    check_grounded,
                     transition_air_state,
                     jump,
                     (
