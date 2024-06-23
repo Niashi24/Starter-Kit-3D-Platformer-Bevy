@@ -14,7 +14,10 @@ use bevy::app::App;
 #[cfg(debug_assertions)]
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin};
 use bevy::prelude::*;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
+use bevy_tnua::prelude::TnuaControllerPlugin;
+use bevy_tnua_rapier3d::TnuaRapier3dPlugin;
 use crate::player::camera::CameraPlugin;
 use crate::player::PlayerPlugin;
 
@@ -44,6 +47,8 @@ impl Plugin for GamePlugin {
             CameraPlugin,
             
             RapierPhysicsPlugin::<NoUserData>::default(),
+            TnuaRapier3dPlugin::new(FixedUpdate),
+            TnuaControllerPlugin::new(FixedUpdate),
             RapierDebugRenderPlugin::default(),
         ));
 
@@ -51,8 +56,8 @@ impl Plugin for GamePlugin {
         {
             app.add_plugins((
                 FrameTimeDiagnosticsPlugin,
-                // LogDiagnosticsPlugin::default(),
                 // EditorPlugin::default(),
+                WorldInspectorPlugin::default()
             ));
         }
     }

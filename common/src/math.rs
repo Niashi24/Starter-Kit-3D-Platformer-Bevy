@@ -36,6 +36,7 @@ pub fn nudge<N, F>(a: N, b: N, decay: F, delta: F) -> N
 /// * if `up` is zero, `Vec3::Y` is used instead
 /// * if `direction` is parallel with `up`, an orthogonal vector is used as the "right" direction
 #[inline]
+#[allow(dead_code)]
 pub fn look_to(direction: Vec3, up: Vec3) -> Quat {
     let back = -direction.try_normalize().unwrap_or(Vec3::NEG_Z);
     let up = up.try_normalize().unwrap_or(Vec3::Y);

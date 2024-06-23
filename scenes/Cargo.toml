@@ -8,3 +8,5 @@ common = { path = "../common" }
 bevy = "0.13.2"
 bevy_game = "0.0.1"
 bevy_rapier3d = "0.26.0"
+bevy-tnua-rapier3d = "0.6.0"
+bevy-tnua = "0.18.0"

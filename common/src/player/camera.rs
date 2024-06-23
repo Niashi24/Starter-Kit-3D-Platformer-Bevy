@@ -174,11 +174,11 @@ fn zoom_towards_target(
     }
 }
 
-/// A framerate independant lerp function.
+/// A framerate independent lerp function.
 /// See https://youtu.be/LSNQuFEDOyQ for why we can't just do a regular lerp.
 ///
 /// In the original gdscript code, Most lerps were done with
-/// `lerp(current, target, <scale> * dt))`
+/// `lerp(current, target, <scale> * dt)`
 /// we can calculate the decay from the scale using the formula
 /// `-ln(1 - scale * dt) / delta_time`
 /// assuming that delta_time is `1/60`

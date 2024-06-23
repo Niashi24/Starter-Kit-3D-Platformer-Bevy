@@ -1,10 +1,14 @@
 ﻿use bevy::prelude::*;
 use bevy::prelude::light_consts::lux;
 use bevy_rapier3d::prelude::*;
+use bevy_tnua::control_helpers::TnuaSimpleAirActionsCounter;
+use bevy_tnua::controller::TnuaControllerBundle;
+use bevy_tnua::prelude::{TnuaBuiltinJump, TnuaBuiltinWalk};
+use bevy_tnua_rapier3d::{TnuaRapier3dIOBundle, TnuaRapier3dSensorShape};
 use common::loading::{ModelAssets, PlayerAssets};
 use common::player::camera::{TargetRotation, TargetZoom, ViewCamera, ViewFollowTarget, ViewRotateStats, ViewZoomStats};
 use common::player::input::player_input_bundle;
-use common::player::components::{Gravity, Player, PlayerState, PlayerStats, Velocity};
+use common::player::components::{Player, PlayerStats};
 
 pub fn spawn_main_scene(
     world: &mut World,
@@ -18,6 +22,7 @@ pub fn spawn_main_scene(
 
 fn spawn_player(world: &mut World) -> Entity {
     let player_model = world.resource::<PlayerAssets>().player.clone_weak();
+    world.resource_mut::<RapierConfiguration>().gravity = Vec3::NEG_Y * 25.0;
 
     world.spawn(SpatialBundle::from_transform(
         Transform::from_translation(Vec3::new(0., 0.5, 1.))))
@@ -25,19 +30,31 @@ fn spawn_player(world: &mut World) -> Entity {
             Name::new("Player"),
             Player,
             PlayerStats {
+                // one ground jump + one air jump
+                // OR two air jumps
+                num_jumps: 1,
                 movement_speed: 4.0,
                 jump_strength: 7.0,
+                walk: TnuaBuiltinWalk {
+                    float_height: 0.26,
+                    cling_distance: 0.35,
+                    air_acceleration: 20.0,
+                    acceleration: 20.0,
+                    turning_angvel: 20.0,
+                    ..default()
+                },
+                jump: TnuaBuiltinJump {
+                    height: 0.98,
+                    ..default()
+                }
             },
-            PlayerState::default(),
-            KinematicCharacterController {
-                min_slope_slide_angle: 15f32.to_radians(),
-                max_slope_climb_angle: 45f32.to_radians(),
-                ..default()
-            },
-            RigidBody::KinematicPositionBased,
-            Collider::capsule(Vec3::Y * 0.35, Vec3::Y * 0.75, 0.3),
-            Velocity(Vec3::ZERO),
-            Gravity(9.81),
+            TnuaSimpleAirActionsCounter::default(),
+            RigidBody::Dynamic,
+            TnuaRapier3dIOBundle::default(),
+            TnuaControllerBundle::default(),
+            Collider::capsule(Vec3::Y * 0.55, Vec3::Y * 0.75, 0.3),
+            TnuaRapier3dSensorShape(Collider::capsule(Vec3::Y * 0.55, Vec3::Y * 0.75, 0.28)),
+            LockedAxes::ROTATION_LOCKED_X | LockedAxes::ROTATION_LOCKED_Z,
         ))
         .insert(player_input_bundle())
         .with_children(|c| {
@@ -150,7 +167,7 @@ fn spawn_environment(
             translation: Vec3::new(-3.0, 0.0, 0.0),
             rotation: Quat::from_euler(
                 EulerRot::XYZ,
-                0.0, (5.0f32).to_radians(), 0.0,
+                0.0, 5.0f32.to_radians(), 0.0,
             ),
             scale: Vec3::ONE,
         },
@@ -158,7 +175,7 @@ fn spawn_environment(
             translation: Vec3::new(-5.0, 0.0, 4.0),
             rotation: Quat::from_euler(
                 EulerRot::XYZ,
-                0.0, (5.0732f32).to_radians(), 0.0,
+                0.0, 5.0732f32.to_radians(), 0.0,
             ),
             scale: Vec3::ONE,
         },
@@ -326,8 +343,7 @@ fn spawn_medium_platform(
                     1.5,
                     0.25,
                     1.5,
-                ))
-                .insert(RigidBody::Fixed);
+                ));
         });
 }
 
@@ -348,7 +364,8 @@ fn spawn_falling_platform(
                     1.0,
                     0.25,
                     1.0,
-                ));
+                ))
+                .insert(RigidBody::Fixed);
         });
 }
 

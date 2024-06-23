@@ -2,7 +2,7 @@
 use bevy::prelude::{in_state, IntoSystemConfigs, IntoSystemSetConfigs, SystemSet};
 use leafwing_input_manager::plugin::InputManagerPlugin;
 use crate::GameState;
-use crate::player::components::{Gravity, Player, PlayerState, PlayerStats, Velocity};
+use crate::player::components::Player;
 use crate::player::input::PlayerAction;
 use crate::player::systems::*;
 
@@ -23,18 +23,7 @@ impl Plugin for PlayerPlugin {
         app
             .add_plugins(InputManagerPlugin::<PlayerAction>::default())
             .add_systems(FixedUpdate, (
-                (
-                    update_applied_velocity,
-                    check_grounded,
-                    transition_air_state,
-                    jump,
-                    (
-                        move_player,
-                        apply_player_air_gravity
-                    ),
-                    apply_current_velocity,
-                    rotate_towards_movement
-                ).chain(),
+                move_player,
                 reset_player,
             ).in_set(PlayerSystemSet))
             .configure_sets(
@@ -47,10 +36,7 @@ impl Plugin for PlayerPlugin {
                 (
                     PlayerSystemSet.run_if(in_state(GameState::Playing)),
                 ))
-            .register_type::<PlayerStats>()
-            .register_type::<Player>()
-            .register_type::<PlayerState>()
-            .register_type::<Gravity>()
-            .register_type::<Velocity>();
+            // .register_type::<PlayerStats>()
+            .register_type::<Player>();
     }
 }
