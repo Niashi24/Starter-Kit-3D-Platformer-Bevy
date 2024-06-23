@@ -11,7 +11,6 @@ use common::player::input::player_input_bundle;
 
 pub fn spawn_player(world: &mut World) -> Entity {
     let player_model = world.resource::<PlayerAssets>().player.clone_weak();
-    world.resource_mut::<RapierConfiguration>().gravity = Vec3::NEG_Y * 25.0;
 
     world.spawn(SpatialBundle::from_transform(
         Transform::from_translation(Vec3::new(0., 0.5, 1.))))

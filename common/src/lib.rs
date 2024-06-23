@@ -4,7 +4,8 @@ pub mod audio;
 pub mod loading;
 pub mod menu;
 pub mod player;
-mod math;
+pub mod math;
+pub mod falling_platform;
 
 use crate::audio::InternalAudioPlugin;
 use crate::loading::LoadingPlugin;
@@ -18,6 +19,7 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
 use bevy_tnua::prelude::TnuaControllerPlugin;
 use bevy_tnua_rapier3d::TnuaRapier3dPlugin;
+use crate::falling_platform::FallingPlatformPlugin;
 use crate::player::camera::CameraPlugin;
 use crate::player::PlayerPlugin;
 
@@ -45,18 +47,18 @@ impl Plugin for GamePlugin {
             InternalAudioPlugin,
             PlayerPlugin,
             CameraPlugin,
+            FallingPlatformPlugin,
             
-            RapierPhysicsPlugin::<NoUserData>::default(),
+            RapierPhysicsPlugin::<NoUserData>::default().in_fixed_schedule(),
             TnuaRapier3dPlugin::new(FixedUpdate),
             TnuaControllerPlugin::new(FixedUpdate),
-            RapierDebugRenderPlugin::default(),
         ));
 
         #[cfg(debug_assertions)]
         {
             app.add_plugins((
                 FrameTimeDiagnosticsPlugin,
-                // EditorPlugin::default(),
+                RapierDebugRenderPlugin::default(),
                 WorldInspectorPlugin::default()
             ));
         }
