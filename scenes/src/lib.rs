@@ -3,6 +3,7 @@ use common::GameState;
 use crate::main_scene::spawn_main_scene;
 
 pub mod main_scene;
+mod blueprints;
 
 pub struct ScenesPlugin;
 
