@@ -1,4 +1,6 @@
-﻿use bevy::prelude::*;
+﻿use std::default;
+
+use bevy::prelude::*;
 use bevy_tnua::prelude::{TnuaBuiltinJump, TnuaBuiltinWalk};
 // use serde::{Deserialize, Serialize};
 
@@ -14,3 +16,10 @@ pub struct PlayerStats {
     pub jump: TnuaBuiltinJump,
 }
 
+#[derive(Copy, Clone, PartialEq, Debug, Default, Reflect)]
+pub enum PlayerAnimationState {
+    #[default]
+    Idle,
+    Walk(f32),
+    Jump
+}

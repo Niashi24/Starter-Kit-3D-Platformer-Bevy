@@ -25,6 +25,7 @@ impl Plugin for PlayerPlugin {
             .add_systems(FixedUpdate, (
                 move_player,
                 reset_player,
+                animate_player
             ).in_set(PlayerSystemSet))
             .configure_sets(
                 Update,

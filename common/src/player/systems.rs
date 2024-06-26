@@ -3,10 +3,13 @@ use bevy::math::{EulerRot, Quat, Vec3};
 use bevy::prelude::*;
 use bevy_tnua::control_helpers::TnuaSimpleAirActionsCounter;
 use bevy_tnua::prelude::{TnuaBuiltinJump, TnuaBuiltinWalk, TnuaController};
-use bevy_tnua::TnuaAction;
+use bevy_tnua::{TnuaAction, TnuaAnimatingState, TnuaAnimatingStateDirective};
 use leafwing_input_manager::action_state::ActionState;
+use crate::loading::PlayerAssets;
 use crate::player::input::PlayerAction;
 use crate::player::components::{Player, PlayerStats};
+
+use super::components::PlayerAnimationState;
 
 pub fn reset_player(
     mut query: Query<&mut Transform, With<Player>>,
@@ -56,6 +59,46 @@ pub fn move_player(
                     <= player_stats.num_jumps,
                 ..player_stats.jump.clone()
             });
+        }
+    }
+}
+
+pub fn animate_player(
+    mut query: Query<(&mut TnuaAnimatingState<PlayerAnimationState>, &TnuaController, &mut AnimationPlayer, &PlayerStats)>,
+    player_animations: Res<PlayerAssets>,
+) {
+    for (mut state, controller, mut player, stats) in query.iter_mut() {
+        info!("here!");
+
+        match state.update_by_discriminant({
+            let Some((_, basis_state)) = controller.concrete_basis::<TnuaBuiltinWalk>() else {
+                continue;
+            };
+
+            let speed = basis_state.running_velocity.length() / stats.movement_speed;
+
+
+            if basis_state.standing_on_entity().is_none() {
+                PlayerAnimationState::Jump
+            } else if speed < 0.05 {
+                PlayerAnimationState::Idle
+            } else {
+                PlayerAnimationState::Walk(speed)
+            }
+            
+        }) {
+            TnuaAnimatingStateDirective::Maintain { state } => {
+                if let PlayerAnimationState::Walk(speed) = state {
+                    player.set_speed(*speed);
+                }
+            },
+            TnuaAnimatingStateDirective::Alter { old_state: _, state } => {
+                match state {
+                    PlayerAnimationState::Idle => player.play(player_animations.idle.clone()).set_speed(1.0),
+                    PlayerAnimationState::Walk(s) => player.play(player_animations.walk.clone()).set_speed(*s),
+                    PlayerAnimationState::Jump => player.play(player_animations.jump.clone()).set_speed(1.0),
+                };
+            },
         }
     }
 }

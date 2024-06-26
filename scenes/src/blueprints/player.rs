@@ -3,10 +3,10 @@ use bevy::math::Vec3;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use bevy_tnua::control_helpers::TnuaSimpleAirActionsCounter;
-use bevy_tnua::prelude::*;
+use bevy_tnua::{prelude::*, TnuaAnimatingState};
 use bevy_tnua_rapier3d::{TnuaRapier3dIOBundle, TnuaRapier3dSensorShape};
 use common::loading::PlayerAssets;
-use common::player::components::{Player, PlayerStats};
+use common::player::components::{Player, PlayerAnimationState, PlayerStats};
 use common::player::input::player_input_bundle;
 
 pub fn spawn_player(world: &mut World) -> Entity {
@@ -37,6 +37,7 @@ pub fn spawn_player(world: &mut World) -> Entity {
                 }
             },
             TnuaSimpleAirActionsCounter::default(),
+            TnuaAnimatingState::<PlayerAnimationState>::default(),
             RigidBody::Dynamic,
             TnuaRapier3dIOBundle::default(),
             TnuaControllerBundle::default(),
